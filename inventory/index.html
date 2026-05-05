@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Inventory System</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:     #0d1117;
+  --surface:#161b22;
+  --card:   #1c2333;
+  --border: #30363d;
+  --text:   #e6edf3;
+  --muted:  #7d8590;
+  --accent: #f0a30a;
+  --green:  #3fb950;
+  --red:    #f85149;
+  --blue:   #58a6ff;
+}
+
+* { box-sizing:border-box; margin:0; padding:0; }
+
+body {
+  font-family:'DM Sans',sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  min-height:100vh;
+}
+
+header {
+  background:var(--surface);
+  border-bottom:1px solid var(--border);
+  padding:0 32px;
+  height:60px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  position:sticky;
+  top:0;
+  z-index:10;
+}
+
+.logo {
+  font-family:'DM Serif Display',serif;
+  font-size:22px;
+  color:var(--accent);
+  letter-spacing:.3px;
+}
+
+.logo span { color:var(--text); font-size:14px; font-family:'DM Sans',sans-serif; margin-left:10px; font-weight:300; }
+
+.header-btn {
+  background:var(--accent);
+  color:#000;
+  border:none;
+  padding:9px 20px;
+  border-radius:8px;
+  font-family:'DM Sans',sans-serif;
+  font-size:14px;
+  font-weight:600;
+  cursor:pointer;
+  transition:.15s;
+}
+.header-btn:hover { background:#fbbf24; }
+
+main { max-width:1100px; margin:0 auto; padding:32px 20px; }
+
+.stats {
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+  gap:16px;
+  margin-bottom:32px;
+}
+
+.stat {
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:12px;
+  padding:22px 20px;
+  display:flex;
+  align-items:center;
+  gap:16px;
+  animation:fadeUp .4s ease both;
+}
+.stat:nth-child(2){ animation-delay:.05s }
+.stat:nth-child(3){ animation-delay:.1s }
+.stat:nth-child(4){ animation-delay:.15s }
+
+.stat-icon {
+  width:46px; height:46px;
+  border-radius:10px;
+  display:flex; align-items:center; justify-content:center;
+  font-size:22px;
+  flex-shrink:0;
+}
+.si-blue  { background:rgba(88,166,255,.12); }
+.si-amber { background:rgba(240,163,10,.12); }
+.si-green { background:rgba(63,185,80,.12); }
+.si-red   { background:rgba(248,81,73,.12); }
+
+.stat-num { font-size:26px; font-weight:600; line-height:1; }
+.stat-lbl { font-size:12px; color:var(--muted); margin-top:3px; }
+
+.toolbar {
+  display:flex;
+  gap:12px;
+  margin-bottom:24px;
+  flex-wrap:wrap;
+  align-items:center;
+}
+
+.search-wrap { position:relative; flex:1; min-width:200px; }
+.search-wrap input {
+  width:100%;
+  background:var(--card);
+  border:1px solid var(--border);
+  color:var(--text);
+  padding:10px 14px 10px 38px;
+  border-radius:9px;
+  font-family:'DM Sans',sans-serif;
+  font-size:14px;
+  transition:.15s;
+}
+.search-wrap input:focus { outline:none; border-color:var(--accent); }
+.search-wrap .ico {
+  position:absolute; left:12px; top:50%;
+  transform:translateY(-50%);
+  color:var(--muted); font-size:15px;
+  pointer-events:none;
+}
+
+select {
+  background:var(--card);
+  border:1px solid var(--border);
+  color:var(--text);
+  padding:10px 14px;
+  border-radius:9px;
+  font-family:'DM Sans',sans-serif;
+  font-size:14px;
+  cursor:pointer;
+  min-width:140px;
+}
+select:focus { outline:none; border-color:var(--accent); }
+
+table {
+  width:100%;
+  border-collapse:collapse;
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:12px;
+  overflow:hidden;
+  font-size:14px;
+}
+
+thead th {
+  background:var(--surface);
+  color:var(--muted);
+  padding:13px 16px;
+  text-align:left;
+  font-weight:500;
+  font-size:12px;
+  text-transform:uppercase;
+  letter-spacing:.6px;
+  border-bottom:1px solid var(--border);
+}
+
+tbody td {
+  padding:14px 16px;
+  border-bottom:1px solid var(--border);
+  vertical-align:middle;
+}
+tbody tr:last-child td { border-bottom:none; }
+tbody tr { transition:.12s; }
+tbody tr:hover td { background:rgba(255,255,255,.025); }
+
+.badge {
+  display:inline-block;
+  padding:3px 10px;
+  border-radius:20px;
+  font-size:11px;
+  font-weight:600;
+}
+.badge-cat  { background:rgba(88,166,255,.15); color:var(--blue); }
+.badge-low  { background:rgba(248,81,73,.15);  color:var(--red);  }
+.badge-ok   { background:rgba(63,185,80,.15);  color:var(--green);}
+
+.act-btn {
+  background:none;
+  border:1px solid var(--border);
+  color:var(--muted);
+  padding:5px 12px;
+  border-radius:7px;
+  font-family:'DM Sans',sans-serif;
+  font-size:12px;
+  cursor:pointer;
+  transition:.15s;
+  margin-right:6px;
+}
+.act-btn:hover { border-color:var(--accent); color:var(--accent); }
+.act-btn.del:hover { border-color:var(--red); color:var(--red); }
+
+.empty {
+  text-align:center;
+  padding:60px 20px;
+  color:var(--muted);
+}
+.empty .ei { font-size:42px; margin-bottom:12px; }
+
+/* MODAL */
+.overlay {
+  display:none;
+  position:fixed; inset:0;
+  background:rgba(0,0,0,.7);
+  z-index:100;
+  align-items:center;
+  justify-content:center;
+}
+.overlay.show { display:flex; }
+
+.modal {
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:16px;
+  padding:32px;
+  width:100%;
+  max-width:460px;
+  animation:popIn .2s ease;
+}
+
+.modal h2 {
+  font-family:'DM Serif Display',serif;
+  font-size:22px;
+  margin-bottom:22px;
+  color:var(--text);
+}
+
+.field { margin-bottom:16px; }
+.field label { display:block; font-size:12px; color:var(--muted); margin-bottom:6px; font-weight:500; text-transform:uppercase; letter-spacing:.5px; }
+.field input, .field select {
+  width:100%;
+  background:var(--surface);
+  border:1px solid var(--border);
+  color:var(--text);
+  padding:11px 14px;
+  border-radius:9px;
+  font-family:'DM Sans',sans-serif;
+  font-size:14px;
+  transition:.15s;
+  min-width:unset;
+}
+.field input:focus, .field select:focus { outline:none; border-color:var(--accent); }
+
+.field-row { display:flex; gap:14px; }
+.field-row .field { flex:1; }
+
+.modal-btns { display:flex; gap:10px; margin-top:8px; }
+
+.btn-save {
+  flex:1;
+  background:var(--accent);
+  color:#000;
+  border:none;
+  padding:12px;
+  border-radius:9px;
+  font-family:'DM Sans',sans-serif;
+  font-weight:600;
+  font-size:14px;
+  cursor:pointer;
+  transition:.15s;
+}
+.btn-save:hover { background:#fbbf24; }
+
+.btn-cancel {
+  background:var(--surface);
+  border:1px solid var(--border);
+  color:var(--muted);
+  padding:12px 20px;
+  border-radius:9px;
+  font-family:'DM Sans',sans-serif;
+  font-size:14px;
+  cursor:pointer;
+  transition:.15s;
+}
+.btn-cancel:hover { color:var(--text); }
+
+.toast {
+  position:fixed;
+  bottom:28px; right:28px;
+  background:var(--card);
+  border:1px solid var(--border);
+  border-left:3px solid var(--green);
+  color:var(--text);
+  padding:13px 20px;
+  border-radius:10px;
+  font-size:14px;
+  font-weight:500;
+  z-index:200;
+  transform:translateY(80px);
+  opacity:0;
+  transition:.3s ease;
+  pointer-events:none;
+}
+.toast.show { transform:translateY(0); opacity:1; }
+.toast.err  { border-left-color:var(--red); }
+
+@keyframes fadeUp {
+  from { opacity:0; transform:translateY(14px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+@keyframes popIn {
+  from { opacity:0; transform:scale(.94); }
+  to   { opacity:1; transform:scale(1); }
+}
+
+@media(max-width:640px){
+  header { padding:0 16px; }
+  main   { padding:20px 14px; }
+  .field-row { flex-direction:column; gap:0; }
+  table  { font-size:12px; }
+  thead th, tbody td { padding:10px 10px; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">StockIQ <span>Inventory Manager</span></div>
+  <button class="header-btn" onclick="openModal()">+ Add Product</button>
+</header>
+
+<main>
+
+  <div class="stats" id="stats">
+    <div class="stat"><div class="stat-icon si-blue">📦</div><div><div class="stat-num" id="s-total">—</div><div class="stat-lbl">Total Products</div></div></div>
+    <div class="stat"><div class="stat-icon si-amber">🏷️</div><div><div class="stat-num" id="s-cats">—</div><div class="stat-lbl">Categories</div></div></div>
+    <div class="stat"><div class="stat-icon si-green">💰</div><div><div class="stat-num" id="s-value">—</div><div class="stat-lbl">Stock Value (RWF)</div></div></div>
+    <div class="stat"><div class="stat-icon si-red">⚠️</div><div><div class="stat-num" id="s-low">—</div><div class="stat-lbl">Low Stock (&lt;5)</div></div></div>
+  </div>
+
+  <div class="toolbar">
+    <div class="search-wrap">
+      <span class="ico">🔍</span>
+      <input type="text" id="search" placeholder="Search products..." oninput="loadProducts()">
+    </div>
+    <select id="cat-filter" onchange="loadProducts()">
+      <option value="">All Categories</option>
+    </select>
+  </div>
+
+  <table id="tbl">
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Product Name</th>
+        <th>Category</th>
+        <th>Quantity</th>
+        <th>Price (RWF)</th>
+        <th>Added</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody id="tbody"></tbody>
+  </table>
+
+</main>
+
+<!-- Modal -->
+<div class="overlay" id="overlay" onclick="closeIfOutside(event)">
+  <div class="modal" id="modal">
+    <h2 id="modal-title">Add Product</h2>
+    <input type="hidden" id="edit-id">
+    <div class="field">
+      <label>Product Name</label>
+      <input type="text" id="f-name" placeholder="e.g. Office Chair">
+    </div>
+    <div class="field">
+      <label>Category</label>
+      <input type="text" id="f-cat" placeholder="e.g. Furniture">
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label>Quantity</label>
+        <input type="number" id="f-qty" placeholder="0" min="0">
+      </div>
+      <div class="field">
+        <label>Price (RWF)</label>
+        <input type="number" id="f-price" placeholder="0" min="0" step="0.01">
+      </div>
+    </div>
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+      <button class="btn-save" onclick="saveProduct()">Save Product</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+function $(id){ return document.getElementById(id); }
+
+function toast(msg, err=false){
+  var t = $('toast');
+  t.textContent = msg;
+  t.className = 'toast show' + (err?' err':'');
+  setTimeout(()=>{ t.className='toast'; }, 2800);
+}
+
+function fmt(n){ return Number(n).toLocaleString(); }
+
+function loadStats(){
+  fetch('api.php?action=stats')
+    .then(r=>r.json())
+    .then(d=>{
+      $('s-total').textContent = d.total;
+      $('s-cats').textContent  = d.cats;
+      $('s-low').textContent   = d.low;
+      var v = parseFloat(d.value);
+      $('s-value').textContent = v >= 1000000
+        ? (v/1000000).toFixed(1)+'M'
+        : fmt(Math.round(v));
+    });
+}
+
+function loadCategories(){
+  fetch('api.php?action=categories')
+    .then(r=>r.json())
+    .then(cats=>{
+      var sel = $('cat-filter');
+      sel.innerHTML = '<option value="">All Categories</option>';
+      cats.forEach(c=>{
+        sel.innerHTML += '<option value="'+c+'">'+c+'</option>';
+      });
+    });
+}
+
+function loadProducts(){
+  var search = $('search').value;
+  var cat    = $('cat-filter').value;
+  fetch('api.php?action=list&search='+encodeURIComponent(search)+'&cat='+encodeURIComponent(cat))
+    .then(r=>r.json())
+    .then(rows=>{
+      var tb = $('tbody');
+      if(!rows.length){
+        tb.innerHTML = '<tr><td colspan="7"><div class="empty"><div class="ei">📭</div>No products found</div></td></tr>';
+        return;
+      }
+      var html = '';
+      rows.forEach(function(r, i){
+        var qBadge = r.quantity < 5
+          ? '<span class="badge badge-low">Low Stock</span>'
+          : '<span class="badge badge-ok">In Stock</span>';
+        var cat = r.category ? '<span class="badge badge-cat">'+r.category+'</span>' : '—';
+        var date = r.added_at ? r.added_at.slice(0,10) : '—';
+        html += '<tr>'
+          + '<td>'+( i+1 )+'</td>'
+          + '<td><strong>'+r.name+'</strong></td>'
+          + '<td>'+cat+'</td>'
+          + '<td>'+r.quantity+' &nbsp;'+qBadge+'</td>'
+          + '<td>'+fmt(r.price)+' RWF</td>'
+          + '<td>'+date+'</td>'
+          + '<td>'
+          +   '<button class="act-btn" onclick="editProduct('+r.id+')">Edit</button>'
+          +   '<button class="act-btn del" onclick="deleteProduct('+r.id+',\''+r.name+'\')">Delete</button>'
+          + '</td>'
+          + '</tr>';
+      });
+      tb.innerHTML = html;
+    });
+}
+
+function openModal(title='Add Product'){
+  $('modal-title').textContent = title;
+  $('overlay').classList.add('show');
+  $('f-name').focus();
+}
+
+function closeModal(){
+  $('overlay').classList.remove('show');
+  $('edit-id').value='';
+  $('f-name').value='';
+  $('f-cat').value='';
+  $('f-qty').value='';
+  $('f-price').value='';
+}
+
+function closeIfOutside(e){
+  if(e.target === $('overlay')) closeModal();
+}
+
+function editProduct(id){
+  fetch('api.php?action=get&id='+id)
+    .then(r=>r.json())
+    .then(d=>{
+      $('edit-id').value  = d.id;
+      $('f-name').value   = d.name;
+      $('f-cat').value    = d.category;
+      $('f-qty').value    = d.quantity;
+      $('f-price').value  = d.price;
+      openModal('Edit Product');
+    });
+}
+
+function saveProduct(){
+  var id    = $('edit-id').value;
+  var name  = $('f-name').value.trim();
+  var cat   = $('f-cat').value.trim();
+  var qty   = $('f-qty').value;
+  var price = $('f-price').value;
+
+  if(!name){ toast('Product name is required', true); return; }
+
+  var data = new FormData();
+  data.append('action', id ? 'edit' : 'add');
+  if(id) data.append('id', id);
+  data.append('name', name);
+  data.append('category', cat);
+  data.append('quantity', qty || 0);
+  data.append('price', price || 0);
+
+  fetch('api.php', { method:'POST', body:data })
+    .then(r=>r.json())
+    .then(res=>{
+      if(res.ok){
+        toast(res.msg);
+        closeModal();
+        loadProducts();
+        loadStats();
+        loadCategories();
+      } else {
+        toast(res.msg, true);
+      }
+    });
+}
+
+function deleteProduct(id, name){
+  if(!confirm('Delete "'+name+'"?')) return;
+  var data = new FormData();
+  data.append('action','delete');
+  data.append('id', id);
+  fetch('api.php', { method:'POST', body:data })
+    .then(r=>r.json())
+    .then(res=>{
+      toast(res.msg);
+      loadProducts();
+      loadStats();
+      loadCategories();
+    });
+}
+
+document.addEventListener('keydown', function(e){
+  if(e.key==='Escape') closeModal();
+});
+
+loadStats();
+loadCategories();
+loadProducts();
+</script>
+
+</body>
+</html>
